@@ -1,0 +1,16 @@
+{
+  "name": "max-path",
+  "version": "1.0.0",
+  "description": "max path of matrix",
+  "main": "src/max-path.js",
+  "scripts": {
+    "start": "node src/max-path.js"
+  },
+  "config": {
+    "matrixDimension" : "3"
+  },
+  "dependencies": {
+    "babel-core": "^6.17.0",
+    "babel-preset-es2015": "^6.16.0"
+  }
+}
