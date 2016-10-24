@@ -1,14 +1,14 @@
 "use strict";
 
-console.log('max-path using dynamic-programming');
+console.log('max-path using dynpro');
 
-//randomMatrix(process.env.npm_package_config_matrixDimension);
+var longesPaths = [];
+
 main();
 
 function main() {
     var matrixDimension = process.env.npm_package_config_matrixDimension;
     console.log('matrixDimension: ' + matrixDimension);
-    //var matrix = sampleMatrix();
     var matrix = randomMatrix(matrixDimension);
     //copy without element-references to source-array
     var pathMatrix = matrix.map(function(array) {
@@ -17,16 +17,43 @@ function main() {
 
     firstColumn(matrix, pathMatrix, matrixDimension);
     firstLine(matrix, pathMatrix, matrixDimension);
-    fillAllTheRest(matrix, pathMatrix, matrixDimension);
 
-    console.log(pathMatrix[matrixDimension][matrixDimension]);
+    restOfMatrix(matrix, pathMatrix, matrixDimension);
+    longestPathsAdd(pathMatrix[matrixDimension][matrixDimension]);
+
+    longestPath(longesPaths);
 
 }
 
-function fillAllTheRest(matrix, pathMatrix, matrixDimension) {
-    for (var i = 1; i <= matrixDimension; i++) {
-        for (var idx = 1; idx <= matrixDimension; idx++) {
-            pathMatrix[i][idx] = matrix[i][idx] + maximum(pathMatrix[i][idx-1], pathMatrix[i-1][idx])
+function longestPath(longesPaths) {
+    var max_of_array = Math.max.apply(Math, longesPaths);
+    console.log('longesPath: ' + max_of_array);
+}
+
+function longestPathsAdd(pathLength) {
+    if(!longesPaths.includes(pathLength)) {
+        longesPaths.push(pathLength);
+    }
+}
+
+function isPathBlock(numberLeft, numberUp) {
+    return numberLeft + numberUp === 0;
+}
+
+function restOfMatrix(matrix, pathMatrix, matrixDimension) {
+    for (var row = 1; row <= matrixDimension; row++) {
+        for (var column = 1; column <= matrixDimension; column++) {
+            var left = pathMatrix[row][column-1];
+            var top = pathMatrix[row-1][column];
+            if (isPathBlock(matrix[row][column-1], matrix[row-1][column])) {
+                pathMatrix[row][column] = matrix[row][column];
+                longestPathsAdd(maximum(left, top));
+            } else if (matrix[row][column] !== 0) {
+                pathMatrix[row][column] = matrix[row][column] + maximum(left, top);
+            } else {
+                longestPathsAdd(maximum(left, top));
+                pathMatrix[row][column] = 0;
+            }
         }
     }
     console.log('processed matrix:');
@@ -39,18 +66,28 @@ function maximum(numberA, numberB) {
 
 function firstColumn(matrix, pathMatrix, matrixDimension) {
     for (var i = 1; i <= matrixDimension; i++) {
-        pathMatrix[i][0] = pathMatrix[i-1][0] + matrix[i][0];
+        if (matrix[i][0] === 0) {
+            if (matrix[i-1] !== undefined) {
+                longestPathsAdd(pathMatrix[i-1][0]);
+                pathMatrix[i][0] = 0;
+            }
+        } else {
+            pathMatrix[i][0] = pathMatrix[i-1][0] + matrix[i][0];
+        }
     }
-    console.log('firstColumn:');
-    printMatrix(pathMatrix);
 }
 
 function firstLine(matrix, pathMatrix, matrixDimension) {
     for (var i = 1; i <= matrixDimension; i++) {
-        pathMatrix[0][i] = pathMatrix[0][i-1] + matrix[0][i];
+        if (matrix[0][i] === 0) {
+            if (matrix[0][i-1] !== undefined) {
+                longestPathsAdd(pathMatrix[0][i-1]);
+                pathMatrix[0][i] = 0;
+            }
+        } else {
+            pathMatrix[0][i] = pathMatrix[0][i-1] + matrix[0][i];
+        }
     }
-    console.log('firstLine:');
-    printMatrix(pathMatrix);
 }
 
 function printMatrix(matrix) {
@@ -76,11 +113,9 @@ function randomMatrix(matrixDimension) {
     for (var i = 0; i <= matrixDimension; i++) {
         matrix.push(new Array([]));
     }
-    printMatrix(matrix);
-
-    for (var i = 0; i <= matrixDimension; i++) {
-        for (var idx = 0; idx <= matrixDimension; idx++) {
-            matrix[i][idx] = randomOneOrZero();
+    for (var row = 0; row <= matrixDimension; row++) {
+        for (var column = 0; column <= matrixDimension; column++) {
+            matrix[row][column] = randomOneOrZero();
         }
     }
     console.log('Matrix:');
